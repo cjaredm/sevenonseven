@@ -8,10 +8,17 @@ type TimeoutsProps = {
 };
 
 export default function Timeouts({ game, setGame }: TimeoutsProps) {
+  const team1Timeouts = game.teams[0].timeouts;
+  const team2Timeouts = game.teams[1].timeouts;
+
   const onTimeoutChange =
     (teamIndex: number, plusOrMinus: "plus" | "minus") => () => {
       const newTeams = [...game.teams];
       const team = newTeams[teamIndex];
+      const newTimeouts = team.timeouts + (plusOrMinus === "plus" ? 1 : -1);
+      if (newTimeouts < 0 || newTimeouts > 3) {
+        return;
+      }
       newTeams[teamIndex].timeouts =
         team.timeouts + (plusOrMinus === "plus" ? 1 : -1);
       setGame({ ...game, teams: newTeams });
@@ -23,16 +30,18 @@ export default function Timeouts({ game, setGame }: TimeoutsProps) {
         <div className="flex gap-4 justify-between items-center">
           <button
             onClick={onTimeoutChange(0, "minus")}
-            className="p-2 rounded bg-red-400 hover:bg-red-600 text-white"
+            className="p-2 rounded bg-red-400 hover:bg-red-600 text-white disabled:bg-gray-200 transition-colors"
+            disabled={team1Timeouts === 0}
           >
             <Icon name="minus" />
           </button>
-          <span className="font-bold text-[16px]">
-            {game.teams[0].timeouts}
-          </span>
+
+          <span className="font-bold text-[16px]">{team1Timeouts}</span>
+
           <button
             onClick={onTimeoutChange(0, "plus")}
-            className="p-2 rounded bg-blue-400 hover:bg-blue-600 text-white"
+            className="p-2 rounded bg-blue-400 hover:bg-blue-600 text-white disabled:bg-gray-200 transition-colors"
+            disabled={team1Timeouts === 3}
           >
             <Icon name="plus" />
           </button>
@@ -44,16 +53,18 @@ export default function Timeouts({ game, setGame }: TimeoutsProps) {
         <div className="flex gap-4 justify-between items-center">
           <button
             onClick={onTimeoutChange(1, "minus")}
-            className="p-2 rounded bg-red-400 hover:bg-red-600 text-white"
+            className="p-2 rounded bg-red-400 hover:bg-red-600 text-white disabled:bg-gray-200 transition-colors"
+            disabled={team2Timeouts === 0}
           >
             <Icon name="minus" />
           </button>
-          <span className="font-bold text-[16px]">
-            {game.teams[1].timeouts}
-          </span>
+
+          <span className="font-bold text-[16px]">{team2Timeouts}</span>
+
           <button
             onClick={onTimeoutChange(1, "plus")}
-            className="p-2 rounded bg-blue-400 hover:bg-blue-600 text-white"
+            className="p-2 rounded bg-blue-400 hover:bg-blue-600 text-white disabled:bg-gray-200 transition-colors"
+            disabled={team2Timeouts === 3}
           >
             <Icon name="plus" />
           </button>

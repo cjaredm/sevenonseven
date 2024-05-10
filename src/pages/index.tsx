@@ -50,7 +50,7 @@ export default function Home() {
               className="w-full p-4 border rounded shadow bg-white flex justify-between gap-4"
             >
               <div>
-                <h2 className="text-lg">
+                <h2 className="text-lg flex flex-col gap-2">
                   <span
                     className={classnames({
                       "font-bold": winningTeamIndex === 0,
@@ -62,9 +62,8 @@ export default function Home() {
                           : "initial",
                     }}
                   >
-                    {game.teams[0].name}
-                  </span>{" "}
-                  vs{" "}
+                    {game.teams[0].name} ({game.teams[0].score})
+                  </span>
                   <span
                     className={classnames({
                       "font-bold": winningTeamIndex === 1,
@@ -76,12 +75,9 @@ export default function Home() {
                           : "initial",
                     }}
                   >
-                    {game.teams[1].name}
+                    {game.teams[1].name} ({game.teams[1].score})
                   </span>
                 </h2>
-                <p className="text-md">
-                  Score: {game.teams[0].score} - {game.teams[1].score}
-                </p>
               </div>
 
               <div className="flex flex-col gap-2">
