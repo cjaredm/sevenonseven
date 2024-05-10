@@ -18,12 +18,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       <PageWrapper>
         <Component {...pageProps} />
       </PageWrapper>
-
-      <footer className="bg-gray-700 text-white p-4">
-        <div className="container mx-auto text-center">
-          &copy; 2024 7on7 Scoring
-        </div>
-      </footer>
     </>
   );
 }

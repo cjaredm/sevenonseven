@@ -5,6 +5,7 @@ import TextInput from "resolves/app/components/TextInput";
 const BASE_TEAM = {
   score: 0,
   timeouts: 3,
+  downs: 1,
 };
 
 export default function New() {
@@ -31,6 +32,10 @@ export default function New() {
         { ...teamA, ...BASE_TEAM },
         { ...teamB, ...BASE_TEAM },
       ],
+      firstTeamPossession: null,
+      isSecondHalf: false,
+      currentPossessionIndex: 0,
+      final: false,
     };
 
     const gamesData = JSON.parse(localStorage.getItem("7on7") || "{}");

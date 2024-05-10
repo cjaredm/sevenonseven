@@ -20,7 +20,7 @@ export default function Kickoff({
   const startGameWithTeamIndex = (index: number) => {
     const newGame = {
       ...game,
-      firstHalfPossessionIndex: index,
+      firstTeamPossession: index,
       currentPossessionIndex: index,
     };
     setGame(newGame);

@@ -33,7 +33,7 @@ export default function Game() {
     setScreenKey(
       (typeof currentGame?.currentPossessionIndex === "number" &&
         "currentGame") ??
-        typeof currentGame?.firstHalfPossessionIndex === "number"
+        typeof currentGame?.firstTeamPossession === "number"
         ? "currentGame"
         : "kickoff",
     );

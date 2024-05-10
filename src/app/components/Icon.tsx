@@ -21,4 +21,6 @@ export default Icon;
 export const ICONS = {
   trash: "heroicons:trash",
   continue: "carbon:continue-filled",
+  plus: "heroicons:plus-16-solid",
+  minus: "heroicons:minus-16-solid",
 };

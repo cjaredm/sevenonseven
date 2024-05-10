@@ -1,6 +1,10 @@
 import type { GameType } from "resolves/app/types";
 import { Dispatch, SetStateAction, useState } from "react";
 import { Tabs } from "resolves/app/components/Tabs";
+import DownCounter from "resolves/app/components/DownCounter";
+import Timeouts from "resolves/app/components/Timeouts";
+import { useRouter } from "next/navigation";
+import TouchdownOptions from "resolves/app/components/TouchdownOptions";
 
 type CurrentGameProps = {
   game: GameType;
@@ -15,10 +19,11 @@ export default function CurrentGame({
   setPossessionIndex,
   setGame,
 }: CurrentGameProps) {
+  const router = useRouter();
   const [showTouchdownOptions, setShowTouchdownOptions] = useState(false);
 
   const onTouchdown = () => {
-    const newTeams = [...game.teams];
+    const newTeams = [...game.teams].map((team) => ({ ...team, down: 1 }));
     newTeams[possessionIndex || 0].score += 6;
     const updatedGame = {
       ...game,
@@ -29,7 +34,7 @@ export default function CurrentGame({
   };
 
   const onTurnover = () => {
-    const newTeams = [...game.teams];
+    const newTeams = [...game.teams].map((team) => ({ ...team, down: 1 }));
     const defendingTeamIndex = possessionIndex === 0 ? 1 : 0;
     newTeams[defendingTeamIndex].score += 2;
     const updatedGame = {
@@ -40,8 +45,9 @@ export default function CurrentGame({
     setPossessionIndex(defendingTeamIndex);
     setGame(updatedGame);
   };
+
   const onInterception = () => {
-    const newTeams = [...game.teams];
+    const newTeams = [...game.teams].map((team) => ({ ...team, down: 1 }));
     const defendingTeamIndex = possessionIndex === 0 ? 1 : 0;
     newTeams[defendingTeamIndex].score += 3;
     const updatedGame = {
@@ -52,6 +58,23 @@ export default function CurrentGame({
     setPossessionIndex(defendingTeamIndex);
     setGame(updatedGame);
   };
+
+  const onHalfTime = () => {
+    const newPossessionIndex = game.currentPossessionIndex === 0 ? 1 : 0;
+    const teams = game.teams.map((team) => ({ ...team, down: 1, timeouts: 3 }));
+    setGame({
+      ...game,
+      teams,
+      currentPossessionIndex: newPossessionIndex,
+      isSecondHalf: true,
+    });
+  };
+
+  const onEndGame = () => {
+    setGame({ ...game, final: true });
+    router.push("/");
+  };
+
   const updatePoints = (points: number) => {
     const newTeams = [...game.teams];
     newTeams[possessionIndex || 0].score += points;
@@ -65,13 +88,12 @@ export default function CurrentGame({
     setGame(updatedGame);
     setShowTouchdownOptions(false);
   };
+
   const onTabClick = (index: number) => {
     setGame({ ...game, currentPossessionIndex: index });
     setPossessionIndex(index);
     setShowTouchdownOptions(false);
   };
-
-  console.log("CurrentGame", game, possessionIndex);
 
   return (
     <div className="flex flex-col gap-2 flex-1 h-full">
@@ -99,17 +121,10 @@ export default function CurrentGame({
               {game.teams[1].score}
             </p>
           </div>
-          <div className="flex gap-4 justify-between">
-            <div className="flex flex-col gap-4">
-              <p className="font-bold">Timeouts: {game.teams[0].timeouts}</p>
-            </div>
 
-            <div className="flex flex-col gap-4">
-              <p className="font-bold">Timeouts: {game.teams[1].timeouts}</p>
-            </div>
-          </div>
+          <Timeouts game={game} setGame={setGame} />
 
-          {/* Use Timeouts */}
+          <DownCounter game={game} setGame={setGame} />
 
           {showTouchdownOptions ? (
             <TouchdownOptions updatePoints={updatePoints} />
@@ -117,19 +132,19 @@ export default function CurrentGame({
             <div className="flex-1 flex flex-col justify-end gap-4">
               <button
                 onClick={onTouchdown}
-                className="bg-green-500 rounded text-white font-bold py-2 px-4 w-full"
+                className="bg-green-500 hover:bg-green-300 rounded text-white font-bold py-2 px-4 w-full"
               >
                 Touchdown
               </button>
               <button
                 onClick={onTurnover}
-                className="bg-gray-400 rounded text-white font-bold py-2 px-4 w-full"
+                className="bg-gray-400 hover:bg-gray-200 rounded text-white font-bold py-2 px-4 w-full"
               >
                 Turn Over
               </button>
               <button
                 onClick={onInterception}
-                className="bg-red-600 rounded text-white font-bold py-2 px-4 w-full"
+                className="bg-red-600 hover:bg-red-400 rounded text-white font-bold py-2 px-4 w-full"
               >
                 Interception
               </button>
@@ -137,35 +152,23 @@ export default function CurrentGame({
           )}
         </div>
       </Tabs>
-    </div>
-  );
-}
 
-type TouchdownOptionsProps = {
-  updatePoints: (points: number) => void;
-};
-
-function TouchdownOptions({ updatePoints }: TouchdownOptionsProps) {
-  return (
-    <div className="flex-1 flex flex-col justify-end gap-4">
-      <button
-        onClick={() => updatePoints(2)}
-        className="bg-green-600 rounded text-white font-bold py-2 px-4 w-full"
-      >
-        + 2 points
-      </button>
-      <button
-        onClick={() => updatePoints(1)}
-        className="bg-green-300 rounded text-white font-bold py-2 px-4 w-full"
-      >
-        + 1 points
-      </button>
-      <button
-        onClick={() => updatePoints(0)}
-        className="bg-gray-400 rounded text-white font-bold py-2 px-4 w-full"
-      >
-        + 0 points
-      </button>
+      <div className="flex gap-4">
+        {!game.isSecondHalf && (
+          <button
+            onClick={onHalfTime}
+            className="flex-1 hover:bg-orange-400 rounded hover:text-white text-orange-400 font-bold py-2 px-4 w-full"
+          >
+            Halftime
+          </button>
+        )}
+        <button
+          onClick={onEndGame}
+          className="flex-1 hover:bg-green-700 rounded hover:text-white text-green-700 font-bold py-2 px-4 w-full"
+        >
+          End Game
+        </button>
+      </div>
     </div>
   );
 }
