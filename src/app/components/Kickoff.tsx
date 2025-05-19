@@ -7,7 +7,7 @@ type KickoffProps = {
   gameIndex: number;
   possessionIndex: number | null;
   setPossessionIndex: Dispatch<SetStateAction<number | null>>;
-  setScreenKey: (screen: keyof typeof SCREENS) => void;
+  setScreenKey: Dispatch<SetStateAction<keyof typeof SCREENS>>;
   setGame: Dispatch<SetStateAction<GameType | null>>;
 };
 

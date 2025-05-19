@@ -6,13 +6,14 @@ import Timeouts from "resolves/app/components/Timeouts";
 import { useRouter } from "next/navigation";
 import TouchdownOptions from "resolves/app/components/TouchdownOptions";
 import Icon from "resolves/app/components/Icon";
+import { SCREENS } from "resolves/pages/[name]";
 
 type CurrentGameProps = {
   game: GameType;
   setGame: Dispatch<SetStateAction<GameType | null>>;
   possessionIndex: number | null;
   setPossessionIndex: Dispatch<SetStateAction<number | null>>;
-  setScreenKey: Dispatch<SetStateAction<string>>;
+  setScreenKey: Dispatch<SetStateAction<keyof typeof SCREENS>>;
   gameIndex: number;
 };
 
@@ -27,15 +28,19 @@ export default function CurrentGame({
   const router = useRouter();
   const [showTouchdownOptions, setShowTouchdownOptions] = useState(false);
   const [showFieldGoalOptions, setShowFieldGoalOptions] = useState(false);
-  
-  // Is this a 7on7 game or traditional football game?
-  const is7on7 = game.scoringType === '7on7' || !game.scoringType; // Default to 7on7 for backward compatibility
 
-  const addHistoryItem = (type: HistoryItem['type'], points: number, description: string = '') => {
+  // Is this a 7on7 game or traditional football game?
+  const is7on7 = game.scoringType === "7on7" || !game.scoringType; // Default to 7on7 for backward compatibility
+
+  const addHistoryItem = (
+    type: HistoryItem["type"],
+    points: number,
+    description: string = "",
+  ) => {
     const teamIndex = possessionIndex || 0;
     const teamName = game.teams[teamIndex].name;
     const defaultDesc = `${teamName} scored ${points} points (${type})`;
-    
+
     const historyItem: HistoryItem = {
       id: Date.now().toString(),
       timestamp: Date.now(),
@@ -51,7 +56,7 @@ export default function CurrentGame({
   const onTouchdown = () => {
     const newTeams = [...game.teams].map((team) => ({ ...team, down: 1 }));
     newTeams[possessionIndex || 0].score += 6;
-    const history = addHistoryItem('touchdown', 6);
+    const history = addHistoryItem("touchdown", 6);
     const updatedGame = {
       ...game,
       teams: newTeams,
@@ -64,18 +69,18 @@ export default function CurrentGame({
   const onTurnover = () => {
     const newTeams = [...game.teams].map((team) => ({ ...team, down: 1 }));
     const defendingTeamIndex = possessionIndex === 0 ? 1 : 0;
-    
+
     // Only award points in 7on7 scoring
     if (is7on7) {
       newTeams[defendingTeamIndex].score += 2;
     }
 
     const history = addHistoryItem(
-      'turnover', 
-      is7on7 ? 2 : 0, 
-      `${game.teams[defendingTeamIndex].name} possession by turnover`
+      "turnover",
+      is7on7 ? 2 : 0,
+      `${game.teams[defendingTeamIndex].name} possession by turnover`,
     );
-    
+
     const updatedGame = {
       ...game,
       teams: newTeams,
@@ -89,19 +94,19 @@ export default function CurrentGame({
   const onInterception = () => {
     const newTeams = [...game.teams].map((team) => ({ ...team, down: 1 }));
     const defendingTeamIndex = possessionIndex === 0 ? 1 : 0;
-    
+
     // Only award points in 7on7 scoring
     if (is7on7) {
       newTeams[defendingTeamIndex].score += 3;
     }
-    
+
     const pointsText = is7on7 ? "" : "possession by";
     const history = addHistoryItem(
-      'interception', 
-      is7on7 ? 3 : 0, 
-      `${game.teams[defendingTeamIndex].name} ${pointsText} interception`
+      "interception",
+      is7on7 ? 3 : 0,
+      `${game.teams[defendingTeamIndex].name} ${pointsText} interception`,
     );
-    
+
     const updatedGame = {
       ...game,
       teams: newTeams,
@@ -114,19 +119,19 @@ export default function CurrentGame({
 
   const onSafety = () => {
     if (is7on7) return; // Safety not used in 7on7
-    
+
     const newTeams = [...game.teams].map((team) => ({ ...team, down: 1 }));
     const defendingTeamIndex = possessionIndex === 0 ? 1 : 0;
-    
+
     // Award 2 points for safety in traditional football
     newTeams[defendingTeamIndex].score += 2;
-    
+
     const history = addHistoryItem(
-      'other', 
-      2, 
-      `${game.teams[defendingTeamIndex].name} safety`
+      "other",
+      2,
+      `${game.teams[defendingTeamIndex].name} safety`,
     );
-    
+
     const updatedGame = {
       ...game,
       teams: newTeams,
@@ -139,18 +144,18 @@ export default function CurrentGame({
 
   const onFieldGoal = () => {
     if (is7on7) return; // Field goals not used in 7on7
-    
+
     const newTeams = [...game.teams].map((team) => ({ ...team, down: 1 }));
     newTeams[possessionIndex || 0].score += 3;
-    
+
     const history = addHistoryItem(
-      'other', 
-      3, 
-      `${game.teams[possessionIndex || 0].name} field goal`
+      "other",
+      3,
+      `${game.teams[possessionIndex || 0].name} field goal`,
     );
-    
+
     const defendingTeamIndex = possessionIndex === 0 ? 1 : 0;
-    
+
     const updatedGame = {
       ...game,
       teams: newTeams,
@@ -164,7 +169,7 @@ export default function CurrentGame({
   const onHalfTime = () => {
     const newPossessionIndex = game.currentPossessionIndex === 0 ? 1 : 0;
     const teams = game.teams.map((team) => ({ ...team, down: 1, timeouts: 3 }));
-    
+
     // Add history item for halftime
     const historyItem: HistoryItem = {
       id: Date.now().toString(),
@@ -172,9 +177,9 @@ export default function CurrentGame({
       teamIndex: newPossessionIndex,
       points: 0,
       description: `Halftime - Possession to ${game.teams[newPossessionIndex].name}`,
-      type: 'other',
+      type: "other",
     };
-    
+
     setGame({
       ...game,
       teams,
@@ -186,7 +191,7 @@ export default function CurrentGame({
 
   const onEndGame = () => {
     // Determine the winning team (or if it's a tie)
-    let winningTeamMessage = '';
+    let winningTeamMessage = "";
     if (game.teams[0].score > game.teams[1].score) {
       winningTeamMessage = `${game.teams[0].name} wins (${game.teams[0].score}-${game.teams[1].score})`;
     } else if (game.teams[1].score > game.teams[0].score) {
@@ -202,15 +207,15 @@ export default function CurrentGame({
       teamIndex: game.teams[0].score > game.teams[1].score ? 0 : 1,
       points: 0,
       description: `Game Over - ${winningTeamMessage}`,
-      type: 'other',
+      type: "other",
     };
-    
-    setGame({ 
-      ...game, 
+
+    setGame({
+      ...game,
       final: true,
-      history: [...(game.history || []), historyItem]
+      history: [...(game.history || []), historyItem],
     });
-    
+
     router.push("/");
   };
 
@@ -218,7 +223,11 @@ export default function CurrentGame({
     const newTeams = [...game.teams];
     newTeams[possessionIndex || 0].score += points;
     const defendingTeamIndex = possessionIndex === 0 ? 1 : 0;
-    const history = addHistoryItem('conversion', points, `${game.teams[possessionIndex || 0].name} conversion: ${points}`);
+    const history = addHistoryItem(
+      "conversion",
+      points,
+      `${game.teams[possessionIndex || 0].name} conversion: ${points}`,
+    );
     const updatedGame = {
       ...game,
       teams: newTeams,
@@ -231,7 +240,7 @@ export default function CurrentGame({
   };
 
   const onViewHistory = () => {
-    setScreenKey('gameHistory');
+    setScreenKey("gameHistory");
   };
 
   const onTabClick = (index: number) => {
@@ -281,7 +290,7 @@ export default function CurrentGame({
               >
                 Touchdown (6 pts)
               </button>
-              
+
               {/* 7on7-specific buttons */}
               {is7on7 && (
                 <>
@@ -299,7 +308,7 @@ export default function CurrentGame({
                   </button>
                 </>
               )}
-              
+
               {/* Traditional football buttons */}
               {!is7on7 && (
                 <>
