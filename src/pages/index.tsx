@@ -7,19 +7,19 @@ import { classnames } from "resolves/app/utils";
 // Helper to format date for display
 const formatDisplayDate = (dateStr: string | undefined, createdAt: number | undefined): string => {
   if (!dateStr && !createdAt) return 'Unknown date';
-  
+
   // If we have a date string, use it
   if (dateStr) {
     const date = new Date(dateStr);
     return date.toLocaleDateString();
   }
-  
+
   // Otherwise use createdAt timestamp
   if (createdAt) {
     const date = new Date(createdAt);
     return date.toLocaleDateString();
   }
-  
+
   return 'Unknown date';
 };
 
@@ -34,10 +34,10 @@ export default function Home() {
     }
 
     const gamesData = JSON.parse(localStorageData || "{}");
-    
+
     // Sort games by creation date if available, otherwise keep current order
     if (gamesData.games) {
-      gamesData.games.sort((a, b) => {
+      gamesData.games.sort((a: any, b: any) => {
         // Sort by createdAt if available, most recent first
         if (a.createdAt && b.createdAt) {
           return b.createdAt - a.createdAt;
@@ -46,7 +46,7 @@ export default function Home() {
         return 0;
       });
     }
-    
+
     setData(gamesData);
   }, []);
 
@@ -57,12 +57,12 @@ export default function Home() {
   const deleteGame = (gameId: string) => {
     // Try to find the game by ID first
     let games = data.games.filter((game) => game.id !== gameId);
-    
+
     // If no games were filtered out, try by name (for backward compatibility)
     if (games.length === data.games.length) {
       games = data.games.filter((game) => game.name !== gameId);
     }
-    
+
     const newData = { ...data, games };
     localStorage.setItem("7on7", JSON.stringify({ ...data, games }));
     setData(newData);
@@ -96,7 +96,7 @@ export default function Home() {
                     {formatDisplayDate(game.date, game.createdAt)}
                   </span>
                 </div>
-                
+
                 <div className="flex flex-col gap-1">
                   <span
                     className={classnames({
@@ -125,7 +125,7 @@ export default function Home() {
                     {game.teams[1].name} ({game.teams[1].score})
                   </span>
                 </div>
-                
+
                 {game.final && (
                   <div className="mt-1 text-xs bg-gray-100 rounded px-2 py-1 inline-block">
                     Final
