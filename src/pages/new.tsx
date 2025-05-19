@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import TextInput from "resolves/app/components/TextInput";
+import { ScoringType } from "resolves/app/types";
 
 const BASE_TEAM = {
   score: 0,
@@ -8,26 +9,43 @@ const BASE_TEAM = {
   downs: 1,
 };
 
+// Helper to format date to a more readable format for game names
+const formatDate = (date: Date): string => {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  
+  return `${month}-${day}_${hours}-${minutes}`;
+};
+
+// Generate a unique game ID
+const generateGameId = (teamA: string, teamB: string): string => {
+  const timestamp = Date.now();
+  const dateStr = formatDate(new Date(timestamp));
+  return `${teamA}vs${teamB}_${dateStr}_${timestamp.toString().slice(-4)}`;
+};
+
 export default function New() {
   const router = useRouter();
   const [teamA, setTeamA] = useState({ name: "TeamA", color: "#ff0000" });
   const [teamB, setTeamB] = useState({ name: "TeamB", color: "#0011ff" });
+  const [gameDate, setGameDate] = useState(new Date().toISOString().split('T')[0]);
+  const [scoringType, setScoringType] = useState<ScoringType>('7on7');
 
   const onStartGame = () => {
-    let gameIndex = 0;
-    let gameName = `${teamA.name}vs${teamB.name}`;
-    let hasUniqueName = false;
-    while (!hasUniqueName) {
-      if (!localStorage.getItem(gameName)) {
-        hasUniqueName = true;
-        break;
-      }
-      gameIndex++;
-      gameName = `${gameName}${gameIndex}`;
-    }
-
+    // Generate a unique game ID with timestamp
+    const gameId = generateGameId(teamA.name, teamB.name);
+    
+    // Create a readable display name (still includes teams but is just for display)
+    const displayName = `${teamA.name} vs ${teamB.name}`;
+    
     const game = {
-      name: gameName,
+      id: gameId,
+      name: displayName,
+      date: gameDate,
+      createdAt: Date.now(),
+      scoringType: scoringType,
       teams: [
         { ...teamA, ...BASE_TEAM },
         { ...teamB, ...BASE_TEAM },
@@ -36,6 +54,7 @@ export default function New() {
       isSecondHalf: false,
       currentPossessionIndex: 0,
       final: false,
+      history: [],
     };
 
     const gamesData = JSON.parse(localStorage.getItem("7on7") || "{}");
@@ -46,7 +65,11 @@ export default function New() {
       }),
     );
 
-    router.push(`/${gameName}`);
+    router.push(`/${gameId}`);
+  };
+
+  const toggleScoringType = () => {
+    setScoringType(scoringType === '7on7' ? 'traditional' : '7on7');
   };
 
   return (
@@ -95,6 +118,45 @@ export default function New() {
               onChange={(e) => setTeamB({ ...teamB, color: e.target.value })}
             />
           </label>
+        </div>
+        
+        <div className="flex flex-col gap-1">
+          <label htmlFor="gameDate" className="font-bold">Game Date:</label>
+          <input
+            id="gameDate"
+            type="date"
+            value={gameDate}
+            onChange={(e) => setGameDate(e.target.value)}
+            className="border rounded p-2"
+          />
+        </div>
+        
+        <div className="flex flex-col gap-2">
+          <span className="font-bold">Scoring System:</span>
+          <div className="flex items-center">
+            <div 
+              className={`relative inline-flex cursor-pointer w-12 h-6 rounded-full transition-colors ease-in-out duration-200 ${
+                scoringType === '7on7' ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+              onClick={toggleScoringType}
+            >
+              <span 
+                className={`inline-block w-5 h-5 transform rounded-full bg-white shadow ring-0 transition ease-in-out duration-200 ${
+                  scoringType === '7on7' ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </div>
+            <span className="ml-3">
+              {scoringType === '7on7' ? '7-on-7 Football' : 'Traditional Football'}
+            </span>
+          </div>
+          <div className="text-xs text-gray-500 mt-1">
+            {scoringType === '7on7' ? (
+              <p>7-on-7 scoring: Touchdown (6pts), Conversions (1-2pts), Interception (3pts), Turnover (2pts)</p>
+            ) : (
+              <p>Traditional scoring: Touchdown (6pts), Extra Point (1pt), 2-Point Conversion (2pts), Field Goal (3pts), Safety (2pts)</p>
+            )}
+          </div>
         </div>
       </div>
 

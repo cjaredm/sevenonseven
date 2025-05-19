@@ -1,4 +1,4 @@
-import type { GameType } from "resolves/app/types";
+import type { GameType, HistoryItem } from "resolves/app/types";
 import { Dispatch, SetStateAction } from "react";
 import Icon from "resolves/app/components/Icon";
 import { classnames } from "resolves/app/utils";
@@ -21,13 +21,43 @@ export default function DownCounter({ game, setGame }: DownCounterProps) {
     }
     const newTeams = [...game.teams];
     newTeams[teamIndex].down = newDowns as DownType;
-    setGame({ ...game, teams: newTeams });
+    
+    // Add history item for down change
+    const historyItem: HistoryItem = {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      teamIndex,
+      points: 0,
+      description: `${game.teams[teamIndex].name} - ${upOrDown === "up" ? "Advanced" : "Changed"} to down ${newDowns}`,
+      type: 'other',
+    };
+    
+    setGame({ 
+      ...game, 
+      teams: newTeams, 
+      history: [...(game.history || []), historyItem] 
+    });
   };
 
   const onDownReset = () => {
     const newTeams = [...game.teams];
     newTeams[teamIndex].down = 1;
-    setGame({ ...game, teams: newTeams });
+    
+    // Add history item for down reset
+    const historyItem: HistoryItem = {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      teamIndex,
+      points: 0,
+      description: `${game.teams[teamIndex].name} - Downs reset to 1st down`,
+      type: 'other',
+    };
+    
+    setGame({ 
+      ...game, 
+      teams: newTeams,
+      history: [...(game.history || []), historyItem]
+    });
   };
 
   return (

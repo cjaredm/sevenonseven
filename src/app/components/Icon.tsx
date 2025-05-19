@@ -23,4 +23,5 @@ export const ICONS = {
   continue: "carbon:continue-filled",
   plus: "heroicons:plus-16-solid",
   minus: "heroicons:minus-16-solid",
+  edit: "heroicons:pencil-square",
 };

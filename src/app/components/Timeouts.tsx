@@ -1,5 +1,5 @@
 import Icon from "resolves/app/components/Icon";
-import type { GameType } from "resolves/app/types";
+import type { GameType, HistoryItem } from "resolves/app/types";
 import { Dispatch, SetStateAction } from "react";
 
 type TimeoutsProps = {
@@ -21,7 +21,24 @@ export default function Timeouts({ game, setGame }: TimeoutsProps) {
       }
       newTeams[teamIndex].timeouts =
         team.timeouts + (plusOrMinus === "plus" ? 1 : -1);
-      setGame({ ...game, teams: newTeams });
+      
+      // Add history item for timeout
+      const historyItem: HistoryItem = {
+        id: Date.now().toString(),
+        timestamp: Date.now(),
+        teamIndex,
+        points: 0,
+        description: plusOrMinus === "minus" 
+          ? `${team.name} used a timeout (${newTimeouts} remaining)` 
+          : `${team.name} received a timeout (${newTimeouts} total)`,
+        type: 'other',
+      };
+      
+      setGame({ 
+        ...game, 
+        teams: newTeams,
+        history: [...(game.history || []), historyItem],
+      });
     };
 
   return (
